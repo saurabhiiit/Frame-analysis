@@ -152,7 +152,7 @@ Rab = abs(Rlb);
          xi = x;
      end
      
-     x= 0:0.1:lb+0.3;
+     x= 0:0.1:lb+0.2;
      plot(x,v);
      
  %% Shear force vector for left coulumn
@@ -255,33 +255,98 @@ Rab = abs(Rlb);
      
 
      
-%% Bending moment
-m = [ abs(Mlb) ];
-cnt1=1;
-cnt2=1;
-xi=0;
-flag1=0;
-pm=0;
-for x = 0:1:lb
-    %disp(m);
-    if(flag1==0)
-    m = [m abs(Mlb)+(x*Rab) ];
-    end
+%% Bending moment of beam
+j = 0;
+for x=0:1:lb
+    j = j + 1;
+    temp = 0;
+   % temp1 = 0;
     for pi = 1:npb
-    if( x>pbx(pi))
-        %for pi=1:npb
-                disp(x);
-                disp(pm);
-           pm = ((x-pbx(pi))*pbm(pi));
-            m = [m abs(Mlb)+(x*Rab)-pm ];
-            flag1=1;
-        end
+      if(x<pbx(pi))
+    %    v1(j) = 0;
+        m1(j)= 0;
+        break;
+      else
+     %     temp1 = temp1 + pbm(pi);
+        temp = temp + (pbm(pi)*(x-pbx(pi)));
+      %  v1(j) = 0;
+        m1(j) = 0 ;
+      end
     end
-%      if(cnt2<=nub && (x>ubx(cnt2,1)&& x<=ubx(cnt2,2)))
-%               m = [m m(end)-(ubm(cnt2)*(x-ubx(cnt2,1))*((x-xi)*0.5))];
-%      elseif(cnt2<=nub && x>ubx(cnt2,2))
-%             m  = [m m(end)-(ubm(cnt2)*(ubx(cnt2,2)-ubx(cnt2,1))*(x-(0.5*(ubx(cnt2,2)+ubx(cnt2,1)))))];         
-%          %cnt2 = cnt2 +1;
-%      end 
-    xi = x;
+    for ui = 1:nub
+      if(x<ubx(ui,1))
+        m1(j)= 0;   
+       % v1(j) = 0;
+        break;
+      elseif(x>=ubx(ui,1) && x<ubx(ui,2))
+        temp = temp + ((ubm(ui)*((x-ubx(ui,1))^2))/2);
+        %temp1 = temp1 + ubm(ui)*(x-ubx(ui,1));
+        %v1(j) = 0;
+        m1(j) = 0 ;
+      elseif(x>=ubx(ui,2))
+          temp = temp + (ubm(ui)*(ubx(ui,2) - ubx(ui,1))*(x-((ubx(ui,2) + ubx(ui,1))/2)));
+          %temp = temp + ubm(ui)*(ubx(ui,2) - ubx(ui,1));
+          %disp(ubm(ui)*(ubx(ui,2) - ubx(ui,1))*(x-((ubx(ui,2) + ubx(ui,1))/2)));
+          %disp(temp);
+         % v1(j) = 0;
+          m1(j) = 0 ;
+      end
+    end
+  %  if x<lb
+   %  v(j) = Rab - temp1;
+    %else
+    % v(j) = Rab + Rbb -temp1;
+   % end
+     m(j) = abs(Mlb)+(x*Rab) -temp;
 end
+x=0:1:lb;
+%plot(v,m,x,v1,'linewidth',2);
+%hold on
+plot(x,m,x,m1,'linewidth',2);
+
+%% shear force
+j = 0;
+for x=0:1:lb
+    j = j + 1;
+    temp1 = 0;
+    for pi = 1:npb
+      if(x<pbx(pi))
+        v1(j) = 0;
+        break;
+      else
+          temp1 = temp1 + pbm(pi);
+      %  temp = temp + (pbm(pi)*(x-pbx(pi)));
+        v1(j) = 0;
+        m1(j) = 0 ;
+      end
+    end
+    for ui = 1:nub
+      if(x<ubx(ui,1))
+    %     m1(j)= 0;   
+        v1(j) = 0;
+        break;
+      elseif(x>=ubx(ui,1) && x<ubx(ui,2))
+        %temp = temp + ((ubm(ui)*((x-ubx(ui,1))^2))/2);
+        temp1 = temp1 + ubm(ui)*(x-ubx(ui,1));
+        v1(j) = 0;
+        %m1(j) = 0 ;
+      elseif(x>=ubx(ui,2))
+          %temp = temp + (ubm(ui)*(ubx(ui,2) - ubx(ui,1))*(x-((ubx(ui,2) + ubx(ui,1))/2)));
+          %temp = temp + ubm(ui)*(ubx(ui,2) - ubx(ui,1));
+          %disp(ubm(ui)*(ubx(ui,2) - ubx(ui,1))*(x-((ubx(ui,2) + ubx(ui,1))/2)));
+          %disp(temp);
+          temp1 = temp1 + ubm(ui)*(ubx(ui,2) - ubx(ui,1));
+          v1(j) = 0;
+          m1(j) = 0 ;
+      end
+    end
+    if x<lb
+     v(j) = Rab - temp1;
+    else
+     v(j) = Rab + Rbb -temp1;
+    end
+end
+x=0:1:lb;
+plot(x,v,x,v1,'linewidth',2);
+        
+        
